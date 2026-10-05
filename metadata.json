@@ -1,0 +1,6 @@
+{
+  "name": "Crush and Confessions CU",
+  "description": "Anonymous campus crush and confession platform for CU with Apple-inspired glassmorphism, pseudonymous avatars, real-time matching chat, and community confessions board.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

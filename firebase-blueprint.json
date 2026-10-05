@@ -1,0 +1,165 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile with pseudonymous avatar and private Google info for mutual reveals",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "gender": { "type": "string", "enum": ["male", "female", "other"] },
+        "matchPreference": { "type": "string", "enum": ["female", "male", "any"] },
+        "pseudonym": { "type": "string", "maxLength": 50 },
+        "avatarUrl": { "type": "string", "maxLength": 500 },
+        "faculty": { "type": "string", "maxLength": 100 },
+        "batch": { "type": "string", "maxLength": 50 },
+        "socialHandle": { "type": "string", "maxLength": 100 },
+        "realName": { "type": "string", "maxLength": 100 },
+        "email": { "type": "string", "maxLength": 150 },
+        "photoUrl": { "type": "string", "maxLength": 500 },
+        "isOnline": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "gender", "matchPreference", "pseudonym", "avatarUrl"]
+    },
+    "MatchQueueItem": {
+      "title": "MatchQueueItem",
+      "description": "User waiting in the random matchmaking queue",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "gender": { "type": "string", "enum": ["male", "female", "other"] },
+        "preference": { "type": "string", "enum": ["female", "male", "any"] },
+        "pseudonym": { "type": "string", "maxLength": 50 },
+        "avatarUrl": { "type": "string", "maxLength": 500 },
+        "status": { "type": "string", "enum": ["waiting", "matched"] },
+        "matchedChatId": { "type": "string", "maxLength": 128 },
+        "joinedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "gender", "preference", "status"]
+    },
+    "ChatRoom": {
+      "title": "ChatRoom",
+      "description": "Anonymous one-to-one randomized chat session",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "participants": { "type": "array" },
+        "userA": { "type": "string" },
+        "userB": { "type": "string" },
+        "userAPseudonym": { "type": "string", "maxLength": 50 },
+        "userBPseudonym": { "type": "string", "maxLength": 50 },
+        "userAAvatar": { "type": "string", "maxLength": 500 },
+        "userBAvatar": { "type": "string", "maxLength": 500 },
+        "userAGender": { "type": "string" },
+        "userBGender": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "ended"] },
+        "connectRequestedA": { "type": "boolean" },
+        "connectRequestedB": { "type": "boolean" },
+        "mutualConnect": { "type": "boolean" },
+        "lastMessage": { "type": "string", "maxLength": 1000 },
+        "lastMessageTime": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "endedBy": { "type": "string" }
+      },
+      "required": ["id", "participants", "userA", "userB", "status"]
+    },
+    "ChatMessage": {
+      "title": "ChatMessage",
+      "description": "Real-time message in anonymous chat",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "senderId": { "type": "string" },
+        "senderPseudonym": { "type": "string", "maxLength": 50 },
+        "senderAvatar": { "type": "string", "maxLength": 500 },
+        "text": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "senderId", "text"]
+    },
+    "Confession": {
+      "title": "Confession",
+      "description": "Anonymous campus crush or confession post",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "authorId": { "type": "string" },
+        "authorPseudonym": { "type": "string", "maxLength": 50 },
+        "authorAvatar": { "type": "string", "maxLength": 500 },
+        "authorGender": { "type": "string" },
+        "category": { "type": "string", "enum": ["crush", "confession", "campus-lore", "shuttle-story"] },
+        "targetDepartment": { "type": "string", "maxLength": 100 },
+        "text": { "type": "string", "maxLength": 2000 },
+        "likesCount": { "type": "number" },
+        "commentsCount": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "authorId", "category", "text"]
+    },
+    "ConfessionComment": {
+      "title": "ConfessionComment",
+      "description": "Anonymous comment on a confession post",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "authorId": { "type": "string" },
+        "authorPseudonym": { "type": "string", "maxLength": 50 },
+        "authorAvatar": { "type": "string", "maxLength": 500 },
+        "text": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "authorId", "text"]
+    },
+    "Connection": {
+      "title": "Connection",
+      "description": "Revealed mutual connection after positive interaction",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "users": { "type": "array" },
+        "userAId": { "type": "string" },
+        "userBId": { "type": "string" },
+        "userAName": { "type": "string", "maxLength": 100 },
+        "userBName": { "type": "string", "maxLength": 100 },
+        "userAAvatar": { "type": "string", "maxLength": 500 },
+        "userBAvatar": { "type": "string", "maxLength": 500 },
+        "userASocial": { "type": "string", "maxLength": 100 },
+        "userBSocial": { "type": "string", "maxLength": 100 },
+        "matchedChatId": { "type": "string", "maxLength": 128 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "users", "userAId", "userBId"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Stores user profiles with gender, avatar and preferences"
+    },
+    "/matchQueue/{userId}": {
+      "schema": "MatchQueueItem",
+      "description": "Active users waiting to be paired in random chat"
+    },
+    "/chats/{chatId}": {
+      "schema": "ChatRoom",
+      "description": "One-on-one anonymous chat rooms"
+    },
+    "/chats/{chatId}/messages/{messageId}": {
+      "schema": "ChatMessage",
+      "description": "Messages inside a specific chat room"
+    },
+    "/confessions/{confessionId}": {
+      "schema": "Confession",
+      "description": "Public anonymous confessions and crush board"
+    },
+    "/confessions/{confessionId}/comments/{commentId}": {
+      "schema": "ConfessionComment",
+      "description": "Anonymous comments on a confession"
+    },
+    "/connections/{connectionId}": {
+      "schema": "Connection",
+      "description": "Mutually revealed connections after chats"
+    }
+  }
+}

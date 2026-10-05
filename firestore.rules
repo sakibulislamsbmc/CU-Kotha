@@ -1,0 +1,112 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Health check document for connection test
+    match /test/connection {
+      allow get: if true;
+    }
+
+    // User Profiles
+    match /users/{userId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isOwner(userId) && isValidId(userId) &&
+        incoming().id == userId &&
+        incoming().pseudonym is string && incoming().pseudonym.size() <= 50;
+      allow update: if isOwner(userId) && incoming().id == existing().id;
+      allow delete: if false;
+    }
+
+    // Matchmaking queue
+    match /matchQueue/{userId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isOwner(userId) && isValidId(userId) &&
+        incoming().userId == userId &&
+        incoming().pseudonym is string;
+      allow update: if isSignedIn() && (
+        isOwner(userId) ||
+        incoming().diff(existing()).affectedKeys().hasOnly(['status', 'matchedChatId'])
+      );
+      allow delete: if isOwner(userId);
+    }
+
+    // Chat rooms
+    match /chats/{chatId} {
+      allow get: if isSignedIn() && (resource.data.participants.hasAny([request.auth.uid]));
+      allow list: if isSignedIn() && (resource.data.participants.hasAny([request.auth.uid]));
+      allow create: if isSignedIn() && isValidId(chatId) &&
+        (incoming().participants.hasAny([request.auth.uid])) &&
+        incoming().participants.size() == 2;
+      allow update: if isSignedIn() && (resource.data.participants.hasAny([request.auth.uid]));
+      allow delete: if false;
+
+      // Subcollection: Chat messages
+      match /messages/{messageId} {
+        allow get, list: if isSignedIn();
+        allow create: if isSignedIn() && isValidId(messageId) &&
+          incoming().senderId == request.auth.uid &&
+          incoming().text is string && incoming().text.size() <= 1000;
+        allow update, delete: if false;
+      }
+    }
+
+    // Confessions & Crushes (Publicly readable community wall)
+    match /confessions/{confessionId} {
+      allow get, list: if true;
+      allow create: if isSignedIn() && isValidId(confessionId) &&
+        incoming().authorId == request.auth.uid &&
+        incoming().text is string && incoming().text.size() <= 2000;
+      allow update: if isSignedIn() && (
+        resource.data.authorId == request.auth.uid ||
+        incoming().diff(existing()).affectedKeys().hasOnly(['likesCount', 'commentsCount'])
+      );
+      allow delete: if isSignedIn() && resource.data.authorId == request.auth.uid;
+
+      // Subcollection: Comments
+      match /comments/{commentId} {
+        allow get, list: if true;
+        allow create: if isSignedIn() && isValidId(commentId) &&
+          incoming().authorId == request.auth.uid &&
+          incoming().text is string && incoming().text.size() <= 1000;
+        allow update, delete: if false;
+      }
+    }
+
+    // Connections (mutual reveal)
+    match /connections/{connectionId} {
+      allow get: if isSignedIn() && (resource.data.users.hasAny([request.auth.uid]));
+      allow list: if isSignedIn() && (resource.data.users.hasAny([request.auth.uid]));
+      allow create: if isSignedIn() && isValidId(connectionId) &&
+        (incoming().users.hasAny([request.auth.uid])) &&
+        incoming().users.size() == 2;
+      allow update, delete: if isSignedIn() && (resource.data.users.hasAny([request.auth.uid]));
+    }
+  }
+}
